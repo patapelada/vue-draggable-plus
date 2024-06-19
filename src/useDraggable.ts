@@ -101,6 +101,8 @@ export interface UseDraggableOptions<T> extends ExtendedOptions {
   clone?: (element: T) => T
   immediate?: boolean
   customUpdate?: (event: SortableEvent) => void
+  customAdd?: (event: SortableEvent) => void
+  customRemove?: (event: SortableEvent) => void
 }
 
 /**
@@ -151,7 +153,9 @@ export function useDraggable<T>(...args: any[]): UseDraggableReturn {
   const {
     immediate = true,
     clone = defaultClone,
-    customUpdate
+    customUpdate,
+    customAdd,
+    customRemove
   } = unref(options) ?? {}
 
   /**
@@ -167,6 +171,10 @@ export function useDraggable<T>(...args: any[]): UseDraggableReturn {
    * @param {DraggableEvent} evt
    */
   function onAdd(evt: DraggableEvent) {
+    if (customAdd) {
+      customAdd(evt)
+      return
+    }
     const element = evt.item[DATA_ELEMENT_KEY]
     if (isUndefined(element)) return
     removeNode(evt.item)
@@ -183,6 +191,10 @@ export function useDraggable<T>(...args: any[]): UseDraggableReturn {
    * @param {DraggableEvent} evt
    */
   function onRemove(evt: DraggableEvent) {
+    if (customRemove) {
+      customRemove(evt)
+      return
+    }
     const { from, item, oldIndex, oldDraggableIndex, pullMode, clone } = evt
     insertNodeAt(from, item, oldIndex!)
     if (pullMode === 'clone') {
